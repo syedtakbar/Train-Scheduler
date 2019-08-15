@@ -51,6 +51,9 @@ $(document ).ready(function() {
 
         $("#operationStatus").html("");   
         $("#trainname-input").val("");
+        
+        $("#trainname-input").prop("disabled", false);
+        
         $("#destination-input").val("");
         $("#time-input").val("");
         $("#frequency-input").val("");
@@ -103,7 +106,7 @@ $(document ).ready(function() {
 
         if($(this).text() === "Save Changes"){     
             
-            const docuName = trainName + "."+ destinationName;
+            const docuName = trainName;
             db.collection("trainSchedule").doc(docuName).set({
                 trainName:trainName,
                 destinationName: destinationName,
@@ -129,8 +132,9 @@ $(document ).ready(function() {
             });
         }
         else {
-                        
-                const docuName = trainName + "."+ destinationName;
+
+                            
+                const docuName = trainName;
                 var sfDocRef = db.collection("trainSchedule").doc(docuName);
                 sfDocRef.set({ 
                     trainName:trainName,
@@ -165,8 +169,9 @@ $(document ).ready(function() {
         $('.scheduleForm').css("display", "block");
         $('#submit').text('Update train schedule');
 
-
+        $("#trainname-input").prop("disabled", true);
         $("#trainname-input").val($(this).closest('tr').find('.trainName').text());
+
         $("#destination-input").val($(this).closest('tr').find('.destinationName').text());
         
         const newVal = moment($(this).closest('tr').find('.timeStart').text(), "HH:mm:a").format("HH:mm");
@@ -181,9 +186,8 @@ $(document ).ready(function() {
         clearInterval(interValFunc);
 
         const trainName = $(this).closest('tr').find('.trainName').text(); 
-        const destinationName = $(this).closest('tr').find('.destinationName').text(); 
-
-        const docuName = trainName + "."+ destinationName;
+    
+        const docuName = trainName;
         db.collection("trainSchedule").doc(docuName).delete().then(function() {
             $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train scheduler was deleted.</div>').delay(2500).fadeOut('slow');
             

@@ -1,0 +1,41 @@
+#dashboard {
+    margin: 30px;
+    border-radius: 8px;
+}
+.table{
+    margin-top: 30px;
+}
+
+.scheduleForm{
+    margin: 20 80 80 80px;
+    display: none;
+}
+
+td.deletetrain-scheduler {
+    cursor: pointer;    
+    z-index: 1000;
+}
+
+td.edittrain-scheduler  {
+    cursor: pointer;
+    z-index: 1001;
+}
+
+td.deletetrain-scheduler:hover {
+    cursor: pointer;    
+    
+}
+
+td.edittrain-scheduler:hover  {
+    cursor: pointer;
+    
+}
+
+
+tr {
+    text-align: center;
+}
+
+.timeStart {
+    display: none;
+}

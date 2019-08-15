@@ -1,10 +1,26 @@
 
+
 const db = firebase.firestore();
 const trainScheduleRef = db.collection("trainSchedule");
+let uid = null;
+
+(function(){    
+    const firebase = app_firebase;
+    firebase.auth().onAuthStateChanged(function(user) {
+        if (user) {
+          uid  = user.uid;
+        }
+        else {
+            uid = null;
+            window.location.replace("index.html");
+        }
+      });
+})()
+
 
 let interValFunc;
 
-$(document ).ready(function() {
+$(document).ready(function() {
     $('.scheduleForm').css("display", "none");
 
     interValFunc = setInterval(function LoadData(){
@@ -68,6 +84,16 @@ $(document ).ready(function() {
     $('#createSchedule').click(function(){        
         $('.scheduleForm').css("display", "block");
         $('#submit').text('Save Changes')
+    });
+
+    $('#logout').click( function (){
+        
+        console.log("inside logout");
+        firebase.auth().signOut().then(function() {
+                console.log("inside signout");
+            }).catch(function(error) {
+       // An error happened.
+        });
     });
 
     $('#submit').click(function(){

@@ -1,134 +1,32 @@
-<html lang="en">
+<!DOCTYPE html>
+<html>
 
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Train Scheduler</title>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Login Train Scheduler</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
 
-  <!-- bootstrap related files -->
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-    crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-    crossorigin="anonymous"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-    crossorigin="anonymous"></script>
-
-
-  <!-- jquery import -->
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js"
-    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
-
-  <!-- font awesome for the icons -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
-
-  <!-- custom styles -->
-  <link rel="stylesheet" href="./assets/css/style.css">
 
   <script src="https://www.gstatic.com/firebasejs/6.3.5/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/6.3.5/firebase-firestore.js"></script>
-
-  <!-- Link to Moment.js should go here -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.js"
-    integrity="sha256-H9jAz//QLkDOy/nzE9G4aYijQtkLt9FvGmdUTwBk6gs=" crossorigin="anonymous"></script>
-
-  <script>
-    // Your web app's Firebase configuration
-    var firebaseConfig = {
-      apiKey: "AIzaSyAtGRaXqzlGQhR-SQw8FFBRlyraGYPuw5Q",
-      authDomain: "boot-camp-class-1565196541655.firebaseapp.com",
-      databaseURL: "https://boot-camp-class-1565196541655.firebaseio.com",
-      projectId: "boot-camp-class-1565196541655",
-      storageBucket: "boot-camp-class-1565196541655.appspot.com",
-      messagingSenderId: "843917005805",
-      appId: "1:843917005805:web:eb908bc66090f6e5"
-    };
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-  </script>
-
-
-
-  <!-- initialize script -->
-  <script src="./assets/javascript/train.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/6.3.5/firebase-auth.js"></script>
+  <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
 
 </head>
 
 <body>
-  <div class="alert alert-success text-center m-10 p-10" id="dashboard" role="alert">
-    <h1> Train Scheduler </h1>
-  </div>
-  <br>
-  <div class="container">
 
-    <div class="row">
-      <div class=" col-sm-9">
-        <button class="btn btn-success mb-5 mt-2 p-2" id="createSchedule">
-          Add Schedule <i class="fa fa-plus" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class=" col-sm-3">
-        <input class="btn btn-default  pull-right mb-2" placeholder="Search by train name..." id="search-trainname">
-      </div>
-    </div>
+  <!-- The surrounding HTML is left untouched by FirebaseUI.
+     Your app may use that space for branding, controls and other customizations.-->
+  <h1>Welcome to Train Scheduler App</h1>
+  <div id="firebaseui-auth-container"></div>
+  <div id="loader">Loading...</div>
 
+  <script src='./assets/javascript/firebase.js'></script>
+  <script src='./assets/javascript/login.js'></script>
 
-    <div class="ScheduleForm m-2 p-2">
-      <div class="col-sm-12">
-        <div class="form-row">
-          <div class="form-group col-sm-3">
-            <label for="trainname-input">Train Name</label>
-            <input type="text" class="form-control" id="trainname-input" placeholder="Train Name (max length: 30)"
-              maxlength="30">
-          </div>
-          <div class="form-group col-sm-3">
-            <label for="destination-input">Destination</label>
-            <input type="text" class="form-control" id="destination-input" placeholder="Destination (max length: 255)"
-              maxlength="255">
-          </div>
-          <div class="form-group col-sm-3">
-            <label for="time-input">Time</label>
-            <input type="time" class="form-control" id="time-input" required>
-          </div>
-          <div class="form-group col-sm-3">
-            <label for="frequency-input">Frequency</label>
-            <input type="number" class="form-control" id="frequency-input" placeholder="Frequency Rate" min="1"
-              max="60">
-          </div>
-        </div>
-      </div>
-      <div class="text-right pull-right m-2 p-2">
-        <button class="btn btn-default bg-light" id="cancel">Cancel</button>
-        <button class="btn btn-primary bg-primary" id="submit">Submit</button>
-      </div>
-    </div>
-    <div class="row">
-      <div id="operationStatus"></div>
-    </div>
-    <br>
-    <table class="table table-striped m-2 p-2">
-      <thead class="thead-inverse">
-        <tr>
-          <th scope="col">Train Name</th>
-          <th scope="col">Destination</th>
-          <th scope="col">Frequency (minues)</th>
-          <th scope="col">Next Arrival Time</th>
-          <th scope="col">Arrive In Minutes</th>
-          <th scope="col">Edit</th>
-          <th scope="col">Delete</th>
-        </tr>
-      </thead>
-      <tbody class="tbodyData">
-      </tbody>
-    </table>
-  </div>
-  <br>
-  <br>
 </body>
 
 </html>

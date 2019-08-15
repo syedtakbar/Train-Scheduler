@@ -2,10 +2,12 @@
 const db = firebase.firestore();
 const trainScheduleRef = db.collection("trainSchedule");
 
+let interValFunc;
+
 $(document ).ready(function() {
     $('.scheduleForm').css("display", "none");
 
-    setInterval(function LoadData(){
+    interValFunc = setInterval(function LoadData(){
         trainScheduleRef.get().then(function(querySnapshot) {
             LoadTableData(querySnapshot)
         });
@@ -72,6 +74,8 @@ $(document ).ready(function() {
         const frequencyRate = $("#frequency-input").val();
         const time = $("#time-input").val().trim().split(':');
         const timeStart = moment(time[0] + ":" +  time[1], 'HH:mm').format('hh:mm a')
+        
+        clearInterval(interValFunc);
 
         if(!isTimeValid()){                        
             $('#operationStatus').html('<div class="alert alert-danger"><strong>Error!</strong> invalid time, time should be formatted as HH:mm.</div>');
@@ -108,13 +112,20 @@ $(document ).ready(function() {
                 
             })
             .then(function(docRef) {
-                 $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train scheduler was created!</div>').delay(2500).fadeOut('slow');
-                 $('.scheduleForm').css("display", "none");
-                 LoadData();     
+                 $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train schedule was created!</div>').delay(2500).fadeOut('slow');
+                 $('.scheduleForm').css("display", "none");    
                  ClearInput();   
+
+                 interValFunc  = setInterval(function LoadData(){
+                    trainScheduleRef.get().then(function(querySnapshot) {
+                        LoadTableData(querySnapshot)
+                    });
+                  }, 1000);
+
             })
             .catch(function(error) {
-                $('#operationStatus').html('<div class="alert alert-danger"><strong>Error!</strong> train scheduler was not created!</div>').delay(2500).fadeOut('slow');
+                $('#operationStatus').html('<div class="alert alert-danger"><strong>Error!</strong> train schedule was not created!</div>').delay(2500).fadeOut('slow');
+                ClearInput();   
             });
         }
         else {
@@ -128,13 +139,19 @@ $(document ).ready(function() {
                     frequencyRate: frequencyRate
             })
             .then(function() {
-                $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train scheduler was updated.</div>').delay(2500).fadeOut('slow');
-                $('.scheduleForm').css("display", "none");
-                LoadData();         
+                $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train schedule was updated.</div>').delay(2500).fadeOut('slow');
+                $('.scheduleForm').css("display", "none");       
                 ClearInput();      
+
+                interValFunc  = setInterval(function LoadData(){
+                    trainScheduleRef.get().then(function(querySnapshot) {
+                        LoadTableData(querySnapshot)
+                    });
+                  }, 1000);
             })
             .catch(function(error) {
-                $('#operationStatus').html('<div class="alert alert-danger"><strong>Failure!</strong> train scheduler could not be updated.</div>').delay(2500).fadeOut('slow');
+                $('#operationStatus').html('<div class="alert alert-danger"><strong>Failure!</strong> train schedule could not be updated.</div>').delay(2500).fadeOut('slow');
+                ClearInput();  
             });
 
         }
@@ -146,7 +163,8 @@ $(document ).ready(function() {
     
     $("tbody.tbodyData").on("click","td.edittrain-scheduler", function(){
         $('.scheduleForm').css("display", "block");
-        $('#submit').text('Update train scheduler');
+        $('#submit').text('Update train schedule');
+
 
         $("#trainname-input").val($(this).closest('tr').find('.trainName').text());
         $("#destination-input").val($(this).closest('tr').find('.destinationName').text());
@@ -160,14 +178,21 @@ $(document ).ready(function() {
     
     $("tbody.tbodyData").on("click","td.deletetrain-scheduler", function(){
 
-        
+        clearInterval(interValFunc);
+
         const trainName = $(this).closest('tr').find('.trainName').text(); 
         const destinationName = $(this).closest('tr').find('.destinationName').text(); 
 
         const docuName = trainName + "."+ destinationName;
         db.collection("trainSchedule").doc(docuName).delete().then(function() {
             $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train scheduler was deleted.</div>').delay(2500).fadeOut('slow');
-            LoadData();
+            
+            interValFunc  = setInterval(function LoadData(){
+                trainScheduleRef.get().then(function(querySnapshot) {
+                    LoadTableData(querySnapshot)
+                });
+              }, 1000);
+            
         }).catch(function(error) {
             $('#operationStatus').html('<div class="alert alert-danger"><strong>Failure!</strong> train scheduler was not deleted.</div>').delay(2500).fadeOut('slow');
         });
@@ -175,28 +200,33 @@ $(document ).ready(function() {
 
     $("#search-trainname" ).keyup(function() {
             
-        var searchValue = $(this).val()
+        clearInterval(interValFunc);
+        const searchValue = $(this).val()
         if (searchValue === "")
         {            
-            LoadData();
-            return;
+            interValFunc  = setInterval(function LoadData(){
+                trainScheduleRef.get().then(function(querySnapshot) {
+                    LoadTableData(querySnapshot)
+                });
+              }, 1000);
+            return false;
         }
 
         trainScheduleRef.where("trainName", "==", searchValue)
         .onSnapshot(function(querySnapshot) {
-            LoadTableData(querySnapshot)
+            
+
+            interValFunc  = setInterval(LoadTableData(querySnapshot), 1000);
+
         });
       });
 
       function LoadData(){
-        trainScheduleRef.get().then(function(querySnapshot) {
+        trainScheduleRef.OrderBy("trainName").get().then(function(querySnapshot) {
             LoadTableData(querySnapshot)
         });
       }
 
-      function getTime(dateTime) {
-        return moment({h: dateTime.hours(), m: dateTime.minutes()});
-    }
 
       function LoadTableData(querySnapshot){
         let tableRow='';

@@ -266,11 +266,11 @@ $(document).ready(function() {
             let minutes = 0;
 
             minutes = Math.abs(moment(document.timeStart, 'HH:mm:a').diff(moment(currentTime, 'HH:mm'), "minutes"));
-                        
-            remainderVal =  parseInt(minutes) % parseInt(document.frequencyRate);
-            minutesTillArrival = parseInt(document.frequencyRate - remainderVal);            
+                                    
+            remainderVal =  (minutes % document.frequencyRate);
+            minutesTillArrival = document.frequencyRate - remainderVal;            
             nextArrivalInMin = moment().add(minutesTillArrival, "minutes");            
-            nextArrivalInMillTime = moment(nextArrivalInMin).format("HH:mm");
+            nextArrivalInMillTime = nextArrivalInMin.format("HH:mm");
 
             tableRow +='<tr>';
             tableRow += '<td class="trainName">' + document.trainName + '</td>';

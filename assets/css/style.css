@@ -39,3 +39,8 @@ tr {
 .timeStart {
     display: none;
 }
+
+#logout {
+    top: 10%;
+    
+}

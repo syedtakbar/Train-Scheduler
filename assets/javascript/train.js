@@ -1,33 +1,41 @@
+   
+    const db = firebase.firestore();
+    
+    let uid = null;
+    let email = "";
 
+    (function(){    
+        const firebase = app_firebase;
+        firebase.auth().onAuthStateChanged(function(user) {
+                            
+            if (user) {
+                uid = user.uid;
+                email = user.email;  
+            }
+            else {
+                uid = null;
+                window.location.replace("index.html");
+            }
+        });
+    })();
 
-const db = firebase.firestore();
-const trainScheduleRef = db.collection("trainSchedule");
-let uid = null;
-
-(function(){    
-    const firebase = app_firebase;
-    firebase.auth().onAuthStateChanged(function(user) {
-        if (user) {
-          uid  = user.uid;
-        }
-        else {
-            uid = null;
-            window.location.replace("index.html");
-        }
-      });
-})()
-
-
-let interValFunc;
 
 $(document).ready(function() {
     $('.scheduleForm').css("display", "none");
 
-    interValFunc = setInterval(function LoadData(){
-        trainScheduleRef.get().then(function(querySnapshot) {
-            LoadTableData(querySnapshot)
-        });
-      }, 1000);
+
+    let interValFunc = null;
+    let intervalVal = 3000;
+
+    let trainName = "";
+
+    
+
+    setInterval(function () {
+        $("#curr-time").html(moment().format('HH:mm:ss'))
+    }, 1000);
+
+    interValFunc = setInterval(LoadData, intervalVal);
 
     function isTimeValid(){
         const timeVal =  $("#time-input").val().trim();
@@ -41,14 +49,14 @@ $(document).ready(function() {
         const freqVal = $("#frequency-input").val();        
         if ((isNaN(parseInt(freqVal)) === true) || 
                     (parseInt(freqVal) < 0) || 
-                    (parseInt(freqVal) > 60))
+                    (parseInt(freqVal) > 1000000))
             return false;                    
         else
             return true;
     }
 
     function isNameValid(){
-        const trainName =  $("#trainname-input").val().trim();
+        trainName =  $("#trainname-input").val().trim();
         if (trainName !== "")
             return true;
         else
@@ -88,9 +96,7 @@ $(document).ready(function() {
 
     $('#logout').click( function (){
         
-        console.log("inside logout");
         firebase.auth().signOut().then(function() {
-                console.log("inside signout");
             }).catch(function(error) {
        // An error happened.
         });
@@ -98,7 +104,7 @@ $(document).ready(function() {
 
     $('#submit').click(function(){
 
-        const trainName = $("#trainname-input").val().trim();
+        trainName = $("#trainname-input").val().trim();
         const destinationName = $("#destination-input").val().trim();
         const frequencyRate = $("#frequency-input").val();
         const time = $("#time-input").val().trim().split(':');
@@ -132,8 +138,8 @@ $(document).ready(function() {
 
         if($(this).text() === "Save Changes"){     
             
-            const docuName = trainName;
-            db.collection("trainSchedule").doc(docuName).set({
+            const docuName = trainName ; 
+            db.collection("trainSchedule" + email).doc(docuName).set({
                 trainName:trainName,
                 destinationName: destinationName,
                 timeStart: timeStart,
@@ -143,13 +149,8 @@ $(document).ready(function() {
             .then(function(docRef) {
                  $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train schedule was created!</div>').delay(2500).fadeOut('slow');
                  $('.scheduleForm').css("display", "none");    
-                 ClearInput();   
-
-                 interValFunc  = setInterval(function LoadData(){
-                    trainScheduleRef.get().then(function(querySnapshot) {
-                        LoadTableData(querySnapshot)
-                    });
-                  }, 1000);
+                 ClearInput();                    
+                 interValFunc = setInterval(LoadData, intervalVal);
 
             })
             .catch(function(error) {
@@ -160,24 +161,20 @@ $(document).ready(function() {
         else {
 
                             
-                const docuName = trainName;
-                var sfDocRef = db.collection("trainSchedule").doc(docuName);
+                const docuName = trainName; 
+                const sfDocRef = db.collection("trainSchedule" + email).doc(docuName);
                 sfDocRef.set({ 
                     trainName:trainName,
                     destinationName: destinationName,
                     timeStart: timeStart,
                     frequencyRate: frequencyRate
             })
+
             .then(function() {
                 $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train schedule was updated.</div>').delay(2500).fadeOut('slow');
                 $('.scheduleForm').css("display", "none");       
-                ClearInput();      
-
-                interValFunc  = setInterval(function LoadData(){
-                    trainScheduleRef.get().then(function(querySnapshot) {
-                        LoadTableData(querySnapshot)
-                    });
-                  }, 1000);
+                ClearInput();                      
+                iinterValFunc = setInterval(LoadData, intervalVal);
             })
             .catch(function(error) {
                 $('#operationStatus').html('<div class="alert alert-danger"><strong>Failure!</strong> train schedule could not be updated.</div>').delay(2500).fadeOut('slow');
@@ -211,17 +208,12 @@ $(document).ready(function() {
 
         clearInterval(interValFunc);
 
-        const trainName = $(this).closest('tr').find('.trainName').text(); 
+        trainName = $(this).closest('tr').find('.trainName').text(); 
     
-        const docuName = trainName;
-        db.collection("trainSchedule").doc(docuName).delete().then(function() {
-            $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train scheduler was deleted.</div>').delay(2500).fadeOut('slow');
-            
-            interValFunc  = setInterval(function LoadData(){
-                trainScheduleRef.get().then(function(querySnapshot) {
-                    LoadTableData(querySnapshot)
-                });
-              }, 1000);
+        const docuName = trainName; 
+        db.collection("trainSchedule" + email).doc(docuName).delete().then(function() {
+            $('#operationStatus').html('<div class="alert alert-success"><strong>Success!</strong> train scheduler was deleted.</div>').delay(2500).fadeOut('slow');                        
+            interValFunc = setInterval(LoadData, intervalVal);
             
         }).catch(function(error) {
             $('#operationStatus').html('<div class="alert alert-danger"><strong>Failure!</strong> train scheduler was not deleted.</div>').delay(2500).fadeOut('slow');
@@ -233,75 +225,53 @@ $(document).ready(function() {
         clearInterval(interValFunc);
         const searchValue = $(this).val()
         if (searchValue === "")
-        {            
-            interValFunc  = setInterval(function LoadData(){
-                trainScheduleRef.get().then(function(querySnapshot) {
-                    LoadTableData(querySnapshot)
-                });
-              }, 1000);
+        {                        
+            interValFunc = setInterval(LoadData, intervalVal);
             return false;
         }
 
-        trainScheduleRef.where("trainName", "==", searchValue)
-        .onSnapshot(function(querySnapshot) {
-            
-
-            interValFunc  = setInterval(LoadTableData(querySnapshot), 1000);
-
+        const docuName = trainName; 
+        const collRef =  db.collection("trainSchedule" + email);
+        collRef.where("trainName", "==", searchValue)
+        .onSnapshot(function(querySnapshot) {     
+            LoadTableData(querySnapshot)                               
         });
       });
 
-      function LoadData(){
-        trainScheduleRef.OrderBy("trainName").get().then(function(querySnapshot) {
-            LoadTableData(querySnapshot)
+      function LoadData(){        
+        console.log("email: " + email);          
+        db.collection("trainSchedule" + email).get().then(function(querySnapshot) {            
+            LoadTableData(querySnapshot);            
         });
       }
 
 
       function LoadTableData(querySnapshot){
-        let tableRow='';
+        let tableRow =  "";
+
+        if (querySnapshot.length > 0)
+        {
+            querySnapshot.OrderBy("trainName");
+        }
+
         querySnapshot.forEach(function(doc) {
             let document = doc.data();
-            
-                        
+                                    
             const currentTime = moment().format("HH:mm");
-        
-            let minsDiff = 0;
+            
             let remainderVal = 0;
             let nextArrivalInMin = 0;
             let nextArrivalInMillTime  = 0;
-            let minutesTillArrival = 0;
+            let minutesTillArrival = 0;            
+            let minutes = 0;
 
-            let diff = moment(document.timeStart, 'HH:mm:a').diff(moment(currentTime, 'HH:mm'))
-            let minutes = moment.utc(diff).format("mm");
+            minutes = Math.abs(moment(document.timeStart, 'HH:mm:a').diff(moment(currentTime, 'HH:mm'), "minutes"));
+                        
+            remainderVal =  parseInt(minutes) % parseInt(document.frequencyRate);
+            minutesTillArrival = parseInt(document.frequencyRate - remainderVal);            
+            nextArrivalInMin = moment().add(minutesTillArrival, "minutes");            
+            nextArrivalInMillTime = moment(nextArrivalInMin).format("HH:mm");
 
-            let isAfter = moment(document.timeStart, 'HH:mm:a').isAfter(moment(currentTime, 'HH:mm')) ;
-            if (isAfter)
-            {   
-                nextArrivalInMin = minutes;                          
-                minutesTillArrival = minutes;
-                nextArrivalInMillTime = moment().add(minutes, 'minutes').format("HH:mm");
-            }
-            else
-            {
-                minsDiff = (60 - minutes);
-                remainderVal =  minsDiff % document.frequencyRate;
-                minutesTillArrival = parseInt(document.frequencyRate - remainderVal);            
-                nextArrivalInMin = moment().add(minutesTillArrival, "minutes");            
-                nextArrivalInMillTime = moment(nextArrivalInMin).format("HH:mm");
-
-            }
-            
-        
-            // console.log("diff - second: " + minutes); 
-            // console.log("start time: " + timeStartTime);     
-            // console.log("curr time: " + currentTime);     
-            // console.log("diff: " + minsDiff);  
-            // console.log("remainder: " + remainderVal);     
-            // console.log("minutesTillArrival : " + minutesTillArrival); 
-            // console.log("nextArrivalInMin - before format : " + nextArrivalInMin);     
-            // console.log("nextArrivalInMillTime - after format: " + nextArrivalInMillTime);                       
-    
             tableRow +='<tr>';
             tableRow += '<td class="trainName">' + document.trainName + '</td>';
             tableRow += '<td class="destinationName">' + document.destinationName + '</td>';
